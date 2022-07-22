@@ -23,7 +23,7 @@ spec:
         <>: <>
     spec:
       containers:
-      - image: dirceusilva/app-exemplo-prometheus:latest
+      - image: <>
         imagePullPolicy: Always
         name: <>
         ports:
