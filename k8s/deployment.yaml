@@ -1,17 +1,54 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-matheus
+  namespace: aluno-matheus
+spec:
+  rules:
+  - host: app-matheus.aula.jac.bsb.br
+    http:
+      paths:
+      - backend:
+          service: 
+            name: service-matheus
+            port:
+              number: 5000
+        pathType: ImplementationSpecific
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-matheus
+  namespace: aluno-matheus
+spec:
+  ports:
+  - name: http
+    port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: app-matheus
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    <>: <>
-  name: <>
-  namespace: <>
+    name: app-matheus
+  name: deployment-matheus
+  namespace: aluno-matheus
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      <>: <>
+      app: app-matheus
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -20,20 +57,18 @@ spec:
   template:
     metadata:
       labels:
-        <>: <>
+        app: app-matheus
     spec:
       containers:
-      - image: <>
+      - image: tatuads/app-matheus
         imagePullPolicy: Always
-        name: <>
+        name: app-matheus
         ports:
         - containerPort: 5000
           name: http
           protocol: TCP
-        resources: {}
         securityContext:
           allowPrivilegeEscalation: false
-          capabilities: {}
           privileged: false
           readOnlyRootFilesystem: false
           runAsNonRoot: false
@@ -44,6 +79,21 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
       terminationGracePeriodSeconds: 30
 
+---
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  labels:
+    app: app-matheus
+  name: monitor-matheus
+  namespace: aluno-matheus
+spec:
+  podMetricsEndpoints:
+  - port: um
+    interval: 10s
+  selector:
+    matchLabels:
+      app: app-matheus
